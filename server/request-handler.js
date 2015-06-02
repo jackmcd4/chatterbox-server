@@ -11,6 +11,7 @@ this file and include it in basic-server.js so that it actually works.
 *Hint* Check out the node module documentation at http://nodejs.org/api/modules.html.
 
 **************************************************************/
+var messages = {results: []};
 
 var requestHandler = function(request, response) {
 
@@ -30,9 +31,7 @@ var requestHandler = function(request, response) {
   // console.logs in your code.
   // var storage = [];
 
-  request.on('data', function(chunk) {
-    return chunk;
-  });
+
 
 
   console.log("Serving request type " + request.method + " for url " + request.url);
@@ -51,11 +50,29 @@ var requestHandler = function(request, response) {
 
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
-  response.writeHead(statusCode, headers);
 
-  //check request.url for last word i.e., classes/room1, classes/"    "
-    //check request.method ('GET', 'POST', 'PUT', ...)
-      //respond based on above and return response
+  if(request.url.slice(0, 8) === '/classes'){
+    if(request.method === 'POST'){
+      //check request.method ('GET', 'POST', 'PUT', ...)
+        //respond based on above and return response
+    //check request.url for last word i.e., classes/room1, classes/"    "
+        statusCode = 201;
+        request.on('data', function(chunk) {
+          messages.results.push(JSON.parse(chunk));
+        });
+        response.writeHead(statusCode, headers);
+        response.end(JSON.stringify(messages.results));
+        console.log(messages.results)
+    }
+  }else{
+    statusCode = 404;
+  }
+
+
+
+  // if(request.method === 'GET'){
+  //   return true;
+  // }
 
 
   // Make sure to always call response.end() - Node may not send
@@ -65,8 +82,12 @@ var requestHandler = function(request, response) {
   //
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
-  response.end(JSON.stringify({data: 'data', results: []}));
+
+  response.writeHead(statusCode, headers);
+  response.end(JSON.stringify(messages));
 };
+
+
 
 // These headers will allow Cross-Origin Resource Sharing (CORS).
 // This code allows this server to talk to websites that
