@@ -11,7 +11,7 @@ this file and include it in basic-server.js so that it actually works.
 *Hint* Check out the node module documentation at http://nodejs.org/api/modules.html.
 
 **************************************************************/
-var messages = {results: []};
+var messages = [];
 
 var requestHandler = function(request, response) {
 
@@ -57,22 +57,24 @@ var requestHandler = function(request, response) {
         //respond based on above and return response
     //check request.url for last word i.e., classes/room1, classes/"    "
         statusCode = 201;
+        console.log("made it outside");
         request.on('data', function(chunk) {
-          messages.results.push(JSON.parse(chunk));
-        });
+          console.log('inside');
+          var postData = JSON.parse(chunk);
+          postData['createdAt'] = new Date();
+          postData['updatedAt'] = new Date();
+          postData['objectId'] = messages.length;
+          // console.log(postData);
+          messages.push(postData);
+          console.log(messages)
         response.writeHead(statusCode, headers);
-        response.end(JSON.stringify(messages.results));
-        console.log(messages.results)
+        response.end(JSON.stringify(postData));
+        });
+        return;
     }
   }else{
     statusCode = 404;
   }
-
-
-
-  // if(request.method === 'GET'){
-  //   return true;
-  // }
 
 
   // Make sure to always call response.end() - Node may not send
@@ -84,7 +86,7 @@ var requestHandler = function(request, response) {
   // node to actually send all the data over to the client.
 
   response.writeHead(statusCode, headers);
-  response.end(JSON.stringify(messages));
+  response.end(JSON.stringify({results: messages}));
 };
 
 
